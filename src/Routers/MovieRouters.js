@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const TMDb = require('./../TMDB/tmdb');
+const omdb = require('../OMDB/omdb');
 
 const router = new express.Router();
 
@@ -11,27 +11,34 @@ const adminAuthentication = require('./../middleware/AdminAuth');
 
 //serve up the pushing page
 router.get('/movie/admin', (request, response) => {
-    response.sendFile(path.join(__dirname, '../../public/upload.html'))
-    
+    try{
+        response.render('upload');
+    }catch(e){
+        console.log(e);
+    }
+
 })
 
 //search for movie
 router.get('/movie/search', async (request, response) => {
     try{
-        const suggestions = await TMDb(request.query.name);
-        response.send(suggestions)
+        const movie = await omdb(request.query.q);
+        response.send(movie)
     }catch(e){
+        console.log(e);
         response.status(500).send(e);
     }
 })
 
 //push movie to database
-router.post('/movie/push', async (request, response) => {
+router.post('/movie/push', async (request, response) => {    
+
     try{
         const movie = new Movie(request.body);
         await movie.save();
         response.send(movie);
     }catch(e){
+        console.log(e);
         response.status(500).send(e);
 
     }

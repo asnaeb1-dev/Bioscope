@@ -32,23 +32,24 @@ const movieSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    director:{
+        type: String
+    },
+    imageURLs:[{
+        imageurl:{
+            type: String
+        }
+    }],
+    actors:{
+        type: String,
+    },
+    uploadedBy:{
+        type: mongoose.Schema.Types.ObjectId,
+    },
     url:{
         type: String,
         required:true,
         trim: true
-    },
-    director:{
-        type: String
-    },
-    imageURL:{
-        type: String
-    },
-    actors:{
-        type: String
-    },
-    uploadedBy:{
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
     }
 },{
     timestamps : true
