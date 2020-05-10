@@ -5,22 +5,15 @@ const omdb = require('../OMDB/omdb');
 const router = new express.Router();
 
 const Movie = require('./../models/movieModel');
+const recommendations = require('./../OMDB/Recommendation');
+const suggestions = require('./../OMDB/tmdb');
 
 const authentication = require('./../middleware/Auth');
 const adminAuthentication = require('./../middleware/AdminAuth');
 
-//serve up the pushing page
-router.get('/movie/admin', (request, response) => {
-    try{
-        response.render('upload');
-    }catch(e){
-        console.log(e);
-    }
-
-})
 
 //search for movie
-router.get('/movie/search', async (request, response) => {
+router.get('/movie/search', adminAuthentication, async (request, response) => {
     try{
         const movie = await omdb(request.query.q);
         response.send(movie)
@@ -31,7 +24,7 @@ router.get('/movie/search', async (request, response) => {
 })
 
 //push movie to database
-router.post('/movie/push', async (request, response) => {    
+router.post('/movie/push', adminAuthentication, async (request, response) => {    
 
     try{
         const movie = new Movie(request.body);
@@ -89,6 +82,28 @@ router.get('/movie/ratings', authentication, async function(request, response){
         response.status(404).send(e);
     }
 })
+
+//get movie recommendations based on movie selected
+router.get('/movie/recommendations', async function(request, response){
+    const movieTitle = request.query.title;
+    try{
+        const result = await recommendations(movieTitle);
+        response.send(result);    
+    }catch(e){
+        response.send({error: e.message});
+    }
+});
+
+//get suggestions based on text filled
+router.get('/movie/:title', authentication, async function(request, response){
+    const title = request.params.title;
+    try{
+        const res = await suggestions(title);
+        response.send(res);
+    }catch(e){
+        response.send(e.message);
+    }
+});
 
 //search movie by year
 // /movie/year?y={year}

@@ -7,6 +7,9 @@ const Movie = require('./../models/movieModel');
 const adminAuthentication = require('./../middleware/AdminAuth')
 
 //create_account
+router.get('/admin/createadmin', (request, response)=> {
+    response.render('adminRegister');
+})
 router.post('/admin/create', async function(request, response){
     const special_token = request.header('specialtoken');
 
@@ -27,10 +30,16 @@ router.post('/admin/create', async function(request, response){
         const token = await adminPresent.generateTokenForAdmin();
         await adminPresent.save();
         response.status(200).send({adminPresent, token})
+        response.redirect('/movie/admin')
     }catch(e){
         response.status(500).send(e)
         console.log(e)
     }
+})
+
+//serve up login page
+router.get('/admin/loginpage', function(request, response){
+    response.render('adminlogin');
 })
 
 //admin login
@@ -39,6 +48,8 @@ router.post('/admin/login', async function(request, response){
     try{
         const admin = await Admin.findAdminByCredentials(request.body.email, request.body.password, special_token)
         response.send(admin);
+        response.header = admin.token;
+        response.redirect('/movie/admin')
     }catch(e){
         response.status(404).send(e);
     }
