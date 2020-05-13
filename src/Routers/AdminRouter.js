@@ -6,10 +6,7 @@ const Movie = require('./../models/movieModel');
 
 const adminAuthentication = require('./../middleware/AdminAuth')
 
-//create_account
-router.get('/admin/createadmin', (request, response)=> {
-    response.render('adminRegister');
-})
+//create admin account
 router.post('/admin/create', async function(request, response){
     const special_token = request.header('specialtoken');
 
@@ -30,16 +27,9 @@ router.post('/admin/create', async function(request, response){
         const token = await adminPresent.generateTokenForAdmin();
         await adminPresent.save();
         response.status(200).send({adminPresent, token})
-        response.redirect('/movie/admin')
     }catch(e){
         response.status(500).send(e)
-        console.log(e)
     }
-})
-
-//serve up login page
-router.get('/admin/loginpage', function(request, response){
-    response.render('adminlogin');
 })
 
 //admin login
@@ -47,9 +37,7 @@ router.post('/admin/login', async function(request, response){
     const special_token = request.header('specialtoken');
     try{
         const admin = await Admin.findAdminByCredentials(request.body.email, request.body.password, special_token)
-        response.send(admin);
-        response.header = admin.token;
-        response.redirect('/movie/admin')
+        response.send(admin.getPublicProfile());
     }catch(e){
         response.status(404).send(e);
     }
@@ -57,15 +45,80 @@ router.post('/admin/login', async function(request, response){
 
 //get admin profile
 router.get('/admin/me', adminAuthentication, async function(request, response){
-    return response.send(request.admin);
+    const admin = request.admin;
+    return response.send(admin.getPublicProfile());
 })
 
+//delete the account
+router.delete('/admin/remove', adminAuthentication, async function(request, response){
+    try{
+        const admin = await request.admin.remove();
+        response.send(admin.getPublicProfile());
+    }catch(e){
+        response.status(400).send({message: e.message});
+    }
+})
 
-router.get('/admin/upload', adminAuthentication, async function(request, response){
-    response.sendFile(path.join(__dirname, '../../public/upload.html'));
-    /**
-     * CONTINUE!!!!
-     */
+//update the account
+router.patch('/admin/update', adminAuthentication, async function(request, response){
+    const allowedUpdates = ['name', 'email', 'password'];
+    const keys = Object.keys(request.body);
+
+    keys.forEach(key => {
+        if(!allowedUpdates.includes(key)){
+            return response.status(400).send({message: 'failure', err_code: '3'})
+        }
+    })
+    try{
+        const adminF = request.admin;
+        keys.forEach(key => adminF[key] = request.body[key])
+        await adminF.save();
+        response.status(200).send(adminF.getPublicProfile());
+    }catch(e){
+        console.log(e);
+        response.status(500).send({message: e.message})
+    }
+})
+
+//get all uploaded movies
+router.get('/admin/uploads', adminAuthentication, async function(request, response){
+    const admin = request.admin;
+    try{
+        const movies = await Movie.find({uploadedBy: admin._id})
+        response.send(movies)
+    }catch(e){
+        response.status(404).send({error: e.message});
+    }
+});
+
+//push movies to db 
+router.post('/admin/upload/me', adminAuthentication, async function(request, response){
+    try{
+        
+        const movie = new Movie(request.body);
+        await movie.save();
+        request.admin.movies_uploaded.push({
+            movie_id: movie._id,
+            movie_name: movie.title
+        })
+        await request.admin.save();
+        response.send(movie);
+    }catch(e){
+        console.log(e);
+        response.status(500).send(e);
+    }
+
+})
+
+//remove movies uploaded by admin
+router.delete('/admin/upload/delete/:movieid', adminAuthentication, async function(request, response){
+    try{
+        const movie = await Movie.findOne({_id: request.params.movieid});
+        await movie.remove();
+        response.send(movie);    
+    }catch(e){
+        response.status(404).send({message: e.message});
+    }
 })
 
 module.exports = router;

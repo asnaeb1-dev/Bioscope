@@ -12,13 +12,7 @@ const movieSchema = new mongoose.Schema({
         trim: true,
     },
     year:{
-        type:Number,
-        required: true,
-        validate(value){
-            if(typeof value !== 'number'){
-                throw new Error('Enter year correctly')
-            }
-        }
+        type:String
     },
     rating:{
         type: String,
@@ -45,6 +39,7 @@ const movieSchema = new mongoose.Schema({
     },
     uploadedBy:{
         type: mongoose.Schema.Types.ObjectId,
+        required: true
     },
     url:{
         type: String,

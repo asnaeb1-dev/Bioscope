@@ -11,51 +11,36 @@ const suggestions = require('./../OMDB/tmdb');
 const authentication = require('./../middleware/Auth');
 const adminAuthentication = require('./../middleware/AdminAuth');
 
-
-//search for movie
-router.get('/movie/search', adminAuthentication, async (request, response) => {
+//get suggestions based on text filled
+router.get('/movie/title/:title', adminAuthentication, async function(request, response){
+    const title = request.params.title;
     try{
-        const movie = await omdb(request.query.q);
-        response.send(movie)
+        const res = await suggestions(title);
+        response.send(res);
     }catch(e){
-        console.log(e);
-        response.status(500).send(e);
+        response.status(400).send({message: "not available"});
     }
-})
-
-//push movie to database
-router.post('/movie/push', adminAuthentication, async (request, response) => {    
-
-    try{
-        const movie = new Movie(request.body);
-        await movie.save();
-        response.send(movie);
-    }catch(e){
-        console.log(e);
-        response.status(500).send(e);
-
-    }
-})
+});
 
 //get movie by name
 // /movie?t={title}
 router.get('/movie', authentication, async function(request,response){
     try{
-        const movie = await Movie.find({title: request.query.t})
+        const movie = await Movie.findOne({title: request.query.t})
         response.send(movie);
     }catch(e){
-        response.status(404).send(e);
+        response.status(404).send({message: e.message});
     }
 })
 
 //get a movie by its id
 // /movie?id={movie_id}
-router.get('/movie', authentication, async function(request, response){
+router.get('/movie/id', authentication, async function(request, response){
     try{
         const movie = await Movie.findById(request.query.id);
         response.send(movie)
     }catch(e){
-        response.status(404).send(e);
+        response.status(404).send({message: e.message});
     }
 })
 
@@ -70,8 +55,6 @@ router.get('/movie/all', authentication, async function(request, response){
     }
 })
 
-//get movies by genre
-
 //get movies by rating
 // /movies/ratings?r={rating}
 router.get('/movie/ratings', authentication, async function(request, response){
@@ -84,24 +67,14 @@ router.get('/movie/ratings', authentication, async function(request, response){
 })
 
 //get movie recommendations based on movie selected
-router.get('/movie/recommendations', async function(request, response){
+// /movie/recommendation?title={title}
+router.get('/movie/recommendations', authentication, async function(request, response){
     const movieTitle = request.query.title;
     try{
         const result = await recommendations(movieTitle);
         response.send(result);    
     }catch(e){
         response.send({error: e.message});
-    }
-});
-
-//get suggestions based on text filled
-router.get('/movie/:title', authentication, async function(request, response){
-    const title = request.params.title;
-    try{
-        const res = await suggestions(title);
-        response.send(res);
-    }catch(e){
-        response.send(e.message);
     }
 });
 

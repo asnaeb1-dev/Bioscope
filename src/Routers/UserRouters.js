@@ -7,14 +7,15 @@ const authentication = require('./../middleware/Auth');
 //sign up the user
 router.post('/user/signup', async function(request, response){
     const user = new User(request.body);
-    const token = await user.generateAuthToken();
     try{
+        const token = await user.generateAuthToken();
         await user.save();
         response.status(201).send({user, token});
     }catch(e){
-        response.status(400).send(e)
+        response.status(400).send({error: e.message})
     }
 })
+
 //login the user
 router.post('/user/login', async function(request,response){
     try{
@@ -25,6 +26,7 @@ router.post('/user/login', async function(request,response){
         response.status(404).send(e)
     }
 })
+
 //get the user profile
 router.get('/user/me', authentication, async function(request, response){
     const profile = request.user.getUserProfile();
@@ -45,7 +47,7 @@ router.patch('/user/me/edit', authentication, async function(request,response){
         const userF = request.user;
         keys.forEach(key => userF[key] = request.body[key])
         await userF.save();
-        response.status(200).send(useF)
+        response.status(200).send(userF)
     }catch(e){
         response.status(500).send('Failed to update')
     }
@@ -54,10 +56,10 @@ router.patch('/user/me/edit', authentication, async function(request,response){
 //remove a user
 router.delete('/user/delete', authentication, async function(request, response){
     try{
-        await request.user.remove();
-        response.send('user removed!')
+        const user = await request.user.remove();
+        response.send(user)
     }catch(e){
-        response.status(400).send(e);
+        response.status(400).send({error: e.message});
     }
 })
 
@@ -103,10 +105,10 @@ router.delete('/user/remgen', authentication, async function(request, response){
 router.post('/user/watchnow', authentication, async function(request, response){
     try{
         request.user.movieArray.push(request.body);
-        await user.save();
-        response.send(user);
+        await request.user.save();
+        response.send(request.user.movieArray);
     }catch(e){
-        response.status(400).send(e)
+        response.status(400).send(e);
     }
 })
 
@@ -116,7 +118,17 @@ router.get('/user/watched', authentication, async function(request, response){
         const moviesWatched = request.user.movieArray;
         response.send(moviesWatched);
     }catch(e){
-        response.status(400).send('Nothing to show')
+        response.status(404).send({message: e.message});
+    }
+})
+
+router.get('/user/logout', authentication, async function(request, response){
+    try{
+        request.user.tokens = request.user.tokens.filter((token) => token.token!==request.token)
+        await request.user.save();
+        response.status(200).send({message : "logged_out", name: request.user.name})
+    }catch(e){
+        response.status(404).send({message: e.message});
     }
 })
 

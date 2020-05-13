@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const API_KEY = '66ef6fdc';
+const API_KEY = process.env.OMDB_API_KEY;
 
 const getMovieDetails = async (query) => {
     //http://www.omdbapi.com/?apikey=[yourkey]&

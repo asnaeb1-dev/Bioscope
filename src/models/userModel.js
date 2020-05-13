@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 //put this into env vars
-const SECRET_KEY = '!!BIOSCOPE_APP!!';
+const SECRET_KEY = process.env.USER_SECRET;
 const userSchema = new mongoose.Schema({
     name:{
         type: String,

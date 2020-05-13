@@ -3,7 +3,7 @@ const validator = require('validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const SECRET_KEY = '!!BIOSCOPE_APP_ADMIN!!';
+const SECRET_KEY = process.env.ADMIN_SECRET;
 
 const adminSchema = new mongoose.Schema({
     name: {
@@ -52,7 +52,6 @@ adminSchema.pre('save', async function(next){
     if(this.isModified('password')){
         this.password = await bcrypt.hash(this.password, 8)
     }
-
     next();
 })
 
@@ -78,7 +77,16 @@ adminSchema.methods.generateTokenForAdmin = async function(){
     return token;
 }
 
-adminSchema.methods.getProfileForPrincipalAdmin = async function(){
+adminSchema.methods.getPublicProfile =  function(){
+    const admin = this.toObject();
+
+    delete admin.password;
+    delete admin.tokens;
+
+    return admin
+}
+
+adminSchema.methods.getProfileForPrincipalAdmin =  function(){
     const admin = this.toObject();
 
     delete admin.password;

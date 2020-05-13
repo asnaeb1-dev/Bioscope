@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('./../models/userModel');
 
-const SECRET_KEY = '!!BIOSCOPE_APP!!';
+const SECRET_KEY = process.env.USER_SECRET;
 
 const auth = async function(request, response, next){
     try{
