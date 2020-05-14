@@ -91,24 +91,6 @@ router.get('/admin/uploads', adminAuthentication, async function(request, respon
     }
 });
 
-//push movies to db 
-router.post('/admin/upload/me', adminAuthentication, async function(request, response){
-    try{
-        
-        const movie = new Movie(request.body);
-        await movie.save();
-        request.admin.movies_uploaded.push({
-            movie_id: movie._id,
-            movie_name: movie.title
-        })
-        await request.admin.save();
-        response.send(movie);
-    }catch(e){
-        console.log(e);
-        response.status(500).send(e);
-    }
-
-})
 
 //remove movies uploaded by admin
 router.delete('/admin/upload/delete/:movieid', adminAuthentication, async function(request, response){

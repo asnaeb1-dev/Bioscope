@@ -20,6 +20,32 @@ const parseData = (resultArray) => {
         }
     }
     return resu;
+} 
+
+const getMovieData = async (id, user_id, url) => {
+    const baseURL = `https://api.themoviedb.org/3/movie/${id}?api_key=${api_key}&language=en-US`;
+    const response = await fetch(baseURL);
+    const result = await response.json();
+
+    const genreArr = [];
+    result.genres.forEach(genre => genreArr.push(genre));
+
+    const movieObj = {
+        title: result.original_title,
+        description: result.overview,
+        year: result.release_date,
+        rating: result.vote_average,
+        language: result.original_language,
+        genres_array: genreArr,
+        director: null,
+        backdrop: result.backdrop_path,
+        posterPath: result.poster_path,
+        actors: null,
+        uploadedBy: user_id,
+        url: url
+    }
+    console.log(movieObj)
+    return movieObj;
 }
 
-module.exports = getMovies;
+module.exports = {getMovies, getMovieData};

@@ -1,12 +1,10 @@
 const express = require('express');
-const path = require('path');
-const omdb = require('../OMDB/omdb');
 
 const router = new express.Router();
 
 const Movie = require('./../models/movieModel');
 const recommendations = require('./../OMDB/Recommendation');
-const suggestions = require('./../OMDB/tmdb');
+const {getMovies, getMovieData} = require('./../OMDB/tmdb');
 
 const authentication = require('./../middleware/Auth');
 const adminAuthentication = require('./../middleware/AdminAuth');
@@ -15,12 +13,40 @@ const adminAuthentication = require('./../middleware/AdminAuth');
 router.get('/movie/title/:title', adminAuthentication, async function(request, response){
     const title = request.params.title;
     try{
-        const res = await suggestions(title);
+        const res = await getMovies(title);
         response.send(res);
     }catch(e){
+        console.log(e);
         response.status(400).send({message: "not available"});
     }
 });
+
+//push the movie to the database
+router.post('/admin/upload/me', adminAuthentication, async function(request, response){
+    const movieid = request.body.movieid;
+    const url = request.body.url;
+    //search for movie by id
+    try{
+        //get all relevant info about the movie
+        const movieObj = await getMovieData(movieid, request.admin._id,url);
+        //push it
+        const movie = new Movie(movieObj);
+        //save it
+        await movie.save();
+        //make an entry in admin model
+        request.admin.movies_uploaded.push({
+            movie_id: movie._id,
+            movie_name: movie.title
+        })
+        //save it
+        await request.admin.save();
+        //send a success response
+        response.send({message: "success", title: movie.title});
+    }catch(e){
+        console.log(e.message)
+        response.status(404).send({message: e.message});
+    }
+})
 
 //get movie by name
 // /movie?t={title}

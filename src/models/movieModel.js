@@ -22,20 +22,22 @@ const movieSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    genres:{
-        type: String,
-        required: true
-    },
+    genres_array:[{
+        genre:{
+            type: String,
+        }
+    }],
     director:{
         type: String
     },
-    imageURLs:[{
-        imageurl:{
-            type: String
-        }
-    }],
+    backdrop:{
+        type:String
+    },
+    posterPath:{
+        type: String
+    },
     actors:{
-        type: String,
+        type: String
     },
     uploadedBy:{
         type: mongoose.Schema.Types.ObjectId,
