@@ -36,8 +36,10 @@ router.post('/admin/create', async function(request, response){
 router.post('/admin/login', async function(request, response){
     const special_token = request.header('specialtoken');
     try{
-        const admin = await Admin.findAdminByCredentials(request.body.email, request.body.password, special_token)
-        response.send({adminPresent: admin.getPublicProfile(), token: request.token});
+        const admin = await Admin.findAdminByCredentials(request.body.email, request.body.password, special_token);
+        const token = await admin.generateTokenForAdmin();
+        await admin.save();
+        response.send({adminPresent: admin.getPublicProfile(), token});
     }catch(e){
         response.status(404).send(e);
     }
