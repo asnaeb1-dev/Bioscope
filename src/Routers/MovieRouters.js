@@ -30,9 +30,28 @@ router.post('/admin/upload/me', adminAuthentication, async function(request, res
         //get all relevant info about the movie
         const movieObj = await getMovieData(movieid, request.admin._id,url);
         //push it
-        const movie = new Movie(movieObj);
+        const movie = new Movie({
+            tmdb_id: movieObj.tmdb_id,
+            title: movieObj.title,
+            description: movieObj.description,        
+            year: movieObj.year,
+            rating: movieObj.rating,
+            language: movieObj.language,
+            videos: movieObj.videos,
+            director: null,
+            backdrops: movieObj.backdrops,
+            posters: movieObj.posters,
+            actors: movieObj.actors,
+            uploadedBy: movieObj.uploadedBy,
+            url: movieObj.url        
+        });        
+        const rcmd = await recommendations(movieObj.title);
+        movie.recommendation = rcmd;
+
+        movieObj.genres_array.forEach(genre => movie.genres_array.push({genre: genre.name, genre_id: genre.id}))
         //save it
         await movie.save();
+
         //make an entry in admin model
         request.admin.movies_uploaded.push({
             movie_id: movie._id,

@@ -105,4 +105,17 @@ router.delete('/admin/upload/delete/:movieid', adminAuthentication, async functi
     }
 })
 
+//logout admin
+// {baseurl}/admin/logout
+router.get('/admin/logout', adminAuthentication, async function(request, response) {
+    try{
+        request.admin.tokens = request.admin.tokens.filter((token) => token.token!==request.token)
+        await request.admin.save();
+        response.status(200).send({message : "logged_out", name: request.admin.name})
+    }catch(e){
+        response.status(404).send({message: e.message});
+    }
+})
+
+
 module.exports = router;

@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const movieSchema = new mongoose.Schema({
+
+    tmdb_id:{
+        type: Number,
+        required: true
+    },
     title:{
         type: String,
         required: true,
@@ -22,23 +27,64 @@ const movieSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    videos: [{
+        videoKey:{
+            type: String
+        },
+        videoType:{
+            type: String
+        }
+    }],
     genres_array:[{
         genre:{
-            type: String,
+            type: String
+        },
+        genre_id:{
+            type:  Number
         }
     }],
     director:{
         type: String
     },
-    backdrop:{
-        type:String
-    },
-    posterPath:{
-        type: String
-    },
-    actors:{
-        type: String
-    },
+    backdrops: [{
+        backdropPath:{
+            type: String
+        },
+        height:{
+            type: Number
+        },
+        width:{
+            type: Number
+        }
+    }],
+    posters:[{
+        posterPath:{
+            type: String
+        },
+        height:{
+            type: Number
+        },
+        width:{
+            type: Number
+        }
+    }],
+    actors:[{
+        actor:{
+            type: String
+        },
+        actor_poster:{
+            type: String
+        },
+        actor_gender:{
+            type: Number
+        },
+        actor_character:{
+            type: String
+        },
+        actor_id:{
+            type: Number
+        }
+    }],
     uploadedBy:{
         type: mongoose.Schema.Types.ObjectId,
         required: true
@@ -47,7 +93,18 @@ const movieSchema = new mongoose.Schema({
         type: String,
         required:true,
         trim: true
-    }
+    },
+    recommendation: [{
+        recommended_movie: {
+            type: String
+        },
+        recommended_movie_genre: {
+            type: String
+        },
+        movie_poster_data: {
+            type: String
+        }
+    }]
 },{
     timestamps : true
 })
