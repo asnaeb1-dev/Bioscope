@@ -45,11 +45,17 @@ const userSchema = new mongoose.Schema({
         }
     }],
     movieArray:[{
-            movie:{
-                type: String,
-            }
+        movieName:{
+            type: String,
+            unique: true
+        },
+        movie_id:{
+            type: mongoose.Schema.Types.ObjectId
+        },
+        movie_poster:{
+            type: String
         }
-    ],
+    }],
     genre_choices:[{
         genre:{
             type: String
