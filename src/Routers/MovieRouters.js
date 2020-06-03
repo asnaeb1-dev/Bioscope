@@ -25,6 +25,7 @@ router.get('/movie/title/:title', adminAuthentication, async function(request, r
 router.post('/admin/upload/me', adminAuthentication, async function(request, response){
     const movieid = request.body.movieid;
     const url = request.body.url;
+    const category = request.body.category;
     //search for movie by id
     try{
         //get all relevant info about the movie
@@ -33,7 +34,8 @@ router.post('/admin/upload/me', adminAuthentication, async function(request, res
         const movie = new Movie({
             tmdb_id: movieObj.tmdb_id,
             title: movieObj.title,
-            description: movieObj.description,        
+            description: movieObj.description, 
+            category,       
             year: movieObj.year,
             rating: movieObj.rating,
             language: movieObj.language,

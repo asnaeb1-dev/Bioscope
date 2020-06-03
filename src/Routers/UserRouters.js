@@ -1,8 +1,23 @@
 const express = require('express');
 const router = new express.Router();
+require('dotenv').config();
 
 const User = require('./../models/userModel');
 const authentication = require('./../middleware/Auth');
+
+const {sendCode} = require('./../email/email');
+
+//send confirmation code to email
+router.post('/user/sendcode', async function(request, response){
+    try{
+        const code = Math.floor(100000 + Math.random() * 900000);
+        await sendCode(code, request.body.email, process.env.EMAILADDRESS, process.env.PASSWORD);
+        response.send({confirmation_code : code})
+    }catch(e){
+        console.log(e);
+        response.status(400).send({error : e.message});
+    }
+})
 
 //sign up the user
 router.post('/user/signup', async function(request, response){
@@ -23,7 +38,7 @@ router.post('/user/login', async function(request,response){
         const token = await user.generateAuthToken();
         response.status(201).send({user: user.getUserProfile(), token})
     }catch(e){
-        response.status(404).send(e)
+        response.status(400).send({error: e.message});
     }
 })
 
@@ -76,7 +91,7 @@ router.get('/user/genres', authentication, async function(request, response){
 //insert genre choices
 router.post('/user/insertgenres', authentication, async function(request, response){
     try{
-        request.user.genre_choices.push(request.body);
+        request.user.genre_choices= request.body;
         await request.user.save()
         response.send(request.user.genre_choices);
     }catch(e){

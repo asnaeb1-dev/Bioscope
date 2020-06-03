@@ -16,6 +16,10 @@ const movieSchema = new mongoose.Schema({
         required:true,
         trim: true,
     },
+    category:{
+        type:String,
+        required: true
+    },
     year:{
         type:String
     },

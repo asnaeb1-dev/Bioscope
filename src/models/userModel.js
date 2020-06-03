@@ -59,6 +59,9 @@ const userSchema = new mongoose.Schema({
     genre_choices:[{
         genre:{
             type: String
+        },
+        genre_id:{
+            type: Number
         }
     }]
 })
@@ -85,10 +88,13 @@ userSchema.statics.findUserByCredentials = async function(email, password){
 }
 
 userSchema.methods.generateAuthToken = async function(){
-    const token = await jwt.sign({_id: this._id.toString()}, SECRET_KEY);
-    this.tokens.push({token})
-    await this.save();
-    return token;
+    if(this.tokens.length < 1){
+        const token = await jwt.sign({_id: this._id.toString()}, SECRET_KEY);
+        this.tokens.push({token})
+        await this.save();
+        return token;    
+    }
+    throw new Error("You are already logged in from somewhere else. Please logout to continue!")
 }
 
 userSchema.methods.getUserProfile = function(){
