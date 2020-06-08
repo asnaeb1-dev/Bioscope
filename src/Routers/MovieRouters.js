@@ -51,8 +51,8 @@ router.post('/admin/upload/me', adminAuthentication, async function(request, res
         });        
 
         const recommend = await getRecommendations(movieObj.title);
-        movieObj.recommendation = recommend;
-        
+        recommend.forEach( movie => movieObj.recommendation.push({movie_name: movie.movie_name, movie_poster: movie.movie_poster}));
+
         movieObj.genres_array.forEach(genre => movie.genres_array.push({genre: genre.name, genre_id: genre.id}))
         //save it
         await movie.save();    
