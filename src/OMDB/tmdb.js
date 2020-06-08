@@ -24,20 +24,20 @@ const parseData = (resultArray) => {
 } 
 
 const getMovieData = async (id, user_id, url) => {
-    const baseURL = `https://api.themoviedb.org/3/movie/${id}?api_key=${api_key}&language=en-US`;
+    const baseURL = `https://api.themoviedb.org/3/movie/${id}?api_key=${api_key}`;
     const response = await fetch(baseURL);
     const result = await response.json();
     const actors = await getActors(id);
     const videos = await getVideos(id);
     const {backdrops, posters} = await getImages(id);
-
+    
     const movieObj = {
         tmdb_id: id,
-        title: result.original_title,
+        title: result.title,
         description: result.overview,
         year: result.release_date,
         rating: result.vote_average,
-        language: result.original_language,
+        language: result.title,
         videos: videos,
         genres_array: [...result.genres],
         director: null,
@@ -47,7 +47,6 @@ const getMovieData = async (id, user_id, url) => {
         uploadedBy: user_id,
         url: url
     }
-   // console.log(movieObj)
     return movieObj;
 }
 

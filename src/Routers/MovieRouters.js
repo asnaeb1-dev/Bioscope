@@ -3,7 +3,7 @@ const express = require('express');
 const router = new express.Router();
 
 const Movie = require('./../models/movieModel');
-const recommendations = require('./../OMDB/Recommendation');
+const {getRecommendations} = require('./../OMDB/Recommendation');
 const {getMovies, getMovieData} = require('./../OMDB/tmdb');
 
 const authentication = require('./../middleware/Auth');
@@ -26,6 +26,7 @@ router.post('/admin/upload/me', adminAuthentication, async function(request, res
     const movieid = request.body.movieid;
     const url = request.body.url;
     const category = request.body.category;
+    const industry = request.body.industry;
     //search for movie by id
     try{
         //get all relevant info about the movie
@@ -45,21 +46,16 @@ router.post('/admin/upload/me', adminAuthentication, async function(request, res
             posters: movieObj.posters,
             actors: movieObj.actors,
             uploadedBy: movieObj.uploadedBy,
-            url: movieObj.url        
+            url: movieObj.url,
+            industry       
         });        
-        const rcmd = await recommendations(movieObj.title);
-        movie.recommendation = rcmd;
 
+        const recommend = await getRecommendations(movieObj.title);
+        movieObj.recommendation = recommend;
+        
         movieObj.genres_array.forEach(genre => movie.genres_array.push({genre: genre.name, genre_id: genre.id}))
         //save it
-        await movie.save();
-
-        //make an entry in admin model
-        request.admin.movies_uploaded.push({
-            movie_id: movie._id,
-            movie_name: movie.title
-        })
-        //save it
+        await movie.save();    
         await request.admin.save();
         //send a success response
         response.send({message: "success", title: movie.title});
@@ -115,7 +111,7 @@ router.get('/movie/ratings', authentication, async function(request, response){
 
 //get movie recommendations based on movie selected
 // /movie/recommendation?title={title}
-router.get('/movie/recommendations', authentication, async function(request, response){
+router.get('/movie/recommendations', async function(request, response){
     const movieTitle = request.query.title;
     try{
         const result = await recommendations(movieTitle);
@@ -133,6 +129,38 @@ router.get('/movie/year', authentication, async function(request, response){
         response.send(movie);
     }catch(e){
         response.status(404).send(e);
+    }
+})
+
+router.get('/movie/search', authentication, async function(request, response){
+    try{
+        const result = await Movie.find({category: request.query.c});
+        const res = result.filter(movie => movie.title.toLowerCase().includes(request.query.q))
+        response.send(res);
+    }catch(e){
+        response.status(404).send({error: e.message});
+    }
+})
+
+// /movie/category?category={category}
+router.get('/movie/category', authentication, async function(request, response){
+    const category = request.query.category;
+    try{
+        const movies = await Movie.find({category});
+        response.send(movies);
+    }catch(e){
+        response.status(404).send({error: e.message});
+    }
+});
+
+// /movie/category?i={industry}
+router.get('/movie/industry', authentication, async function(request, response){
+    const industry = request.query.i;
+    try{
+        const movies = await Movie.find({industry});
+        response.send(movies);
+    }catch(e){
+        response.status(404).send({error: e.message});
     }
 })
 

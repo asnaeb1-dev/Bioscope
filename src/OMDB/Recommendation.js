@@ -1,32 +1,24 @@
 const fetch = require('node-fetch');
 
-const baseURL = 'https://movie-recommendation-api.herokuapp.com/movie';
+const baseURL = 'https://bioscope-api.herokuapp.com/movie?title=';
+const {getMovieDetails} = require('./../OMDB/omdb');
+const Movie = require('./../models/movieModel');
 
-const getPosters = require('./omdb')
-
+//get recommendations from BioScope API
 const getRecommendations = async (title) => {
-    const response = await fetch(`${baseURL}?title=${title}`, {
-        method: "GET"
-    });
+    const response = await fetch(`${baseURL}${title}`);
     const result = await response.json();
-    if(result !== "Movie not in Database"){
-        const recommendation = [];
-        const rcmd = await saveRecommendation(result, recommendation);
-        return rcmd;
-    }
-    return [];
-}
+    
+    const recommendations = [];
 
-const saveRecommendation = async (result, rcmd) => {
-    for(let i = 0;i<result.length; i++){
-        let poster = await getPosters(result[i].Name);
-        rcmd.push({
-            recommended_movie : result[i].Name,
-            recommended_movie_genre: result[i].Genre,
-            movie_poster_data : poster
+    for(let i = 0;i< result.length;i++){
+        const response = await getMovieDetails(result[i].Name);
+        recommendations.push({
+            movie_name: response.Title,
+            movie_poster: response.Poster
         })
     }
-    return rcmd;
-}
+    return recommendations;
+};
 
-module.exports = getRecommendations;
+module.exports = {getRecommendations};

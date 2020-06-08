@@ -1,6 +1,4 @@
 const express = require('express');
-const hbs = require('hbs')
-const path = require('path');
 const cors = require('cors');
 //connect to db
 require('./db/mongoose');

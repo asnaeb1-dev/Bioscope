@@ -1,11 +1,13 @@
 const express = require('express');
 const router = new express.Router();
-require('dotenv').config();
+require("dotenv").config();
 
 const User = require('./../models/userModel');
+const Movie = require('./../models/movieModel');
 const authentication = require('./../middleware/Auth');
+const bcrypt = require('bcrypt');
 
-const {sendCode} = require('./../email/email');
+const {sendCode, sendForgotPasswordMail} = require('./../email/email');
 
 //send confirmation code to email
 router.post('/user/sendcode', async function(request, response){
@@ -144,6 +146,57 @@ router.get('/user/logout', authentication, async function(request, response){
         response.status(200).send({message : "logged_out", name: request.user.name})
     }catch(e){
         response.status(404).send({message: e.message});
+    }
+})
+
+//change password
+router.post("/user/changepassword", authentication, async function(request, response){
+    const previousPassword = request.body.oldpassword;
+    const newPassword = request.body.newpassword;
+    try{
+        const isAMatch = await bcrypt.compare(previousPassword, request.user.password);
+        if(isAMatch){
+            request.user.password = newPassword;
+            await request.user.save();
+            response.send(request.user);
+        }else{
+            throw new Error("Please enter the proper password")
+        }
+    }catch(e){
+        response.status(400).send({error: e.message});
+    }
+});
+
+//send forgot password code
+router.post("/user/forgot", async function(request, response){
+    const email = request.body.email;
+    try{
+        const confirmation = await User.findOne({email});
+        if(confirmation){
+            const code =  Math.floor(100000 + Math.random() * 900000);
+            await sendForgotPasswordMail(email, code, process.env.EMAILADDRESS, process.env.PASSWORD);
+            response.send({confirmation_code: code});
+        }
+    }catch(e){
+        response.status(404).send({error: e.message})
+    }
+})
+
+//change password
+router.post("/user/forgotpass", async function(request, response){
+    const email = request.body.email;
+    try{
+        const result = await User.findOne({email});
+        if(result){
+            result.password = request.body.password;
+            result.tokens = [];
+            await result.save();
+            response.send(result.user);
+        }else{
+            throw new Error('User not found')
+        }
+    }catch(e){
+        response.status(404).send({error: e.message});
     }
 })
 

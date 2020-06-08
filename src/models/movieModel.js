@@ -99,16 +99,17 @@ const movieSchema = new mongoose.Schema({
         trim: true
     },
     recommendation: [{
-        recommended_movie: {
+        movie_name:{
             type: String
         },
-        recommended_movie_genre: {
-            type: String
-        },
-        movie_poster_data: {
+        movie_poster:{
             type: String
         }
-    }]
+    }],
+    industry:{
+        type: String,
+        required: true
+    }
 },{
     timestamps : true
 })
