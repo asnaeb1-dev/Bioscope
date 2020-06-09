@@ -4,12 +4,13 @@ const movieSchema = new mongoose.Schema({
 
     tmdb_id:{
         type: Number,
-        required: true
+        required: true,
+        unique: true
     },
     title:{
         type: String,
         required: true,
-        trim: true,
+        trim: true
     },
     description:{
         type: String,

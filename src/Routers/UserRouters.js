@@ -3,7 +3,6 @@ const router = new express.Router();
 require("dotenv").config();
 
 const User = require('./../models/userModel');
-const Movie = require('./../models/movieModel');
 const authentication = require('./../middleware/Auth');
 const bcrypt = require('bcrypt');
 
@@ -12,11 +11,15 @@ const {sendCode, sendForgotPasswordMail} = require('./../email/email');
 //send confirmation code to email
 router.post('/user/sendcode', async function(request, response){
     try{
-        const code = Math.floor(100000 + Math.random() * 900000);
-        await sendCode(code, request.body.email, process.env.EMAILADDRESS, process.env.PASSWORD);
-        response.send({confirmation_code : code})
+        const users = await User.find({});
+        if(users.length <= 49){
+            const code = Math.floor(100000 + Math.random() * 900000);
+            await sendCode(code, request.body.email, process.env.EMAILADDRESS, process.env.PASSWORD);
+            response.send({confirmation_code : code})
+        }else{
+            throw new Error('Sorry, User limit passed! Our doors are closed.')
+        }
     }catch(e){
-        console.log(e);
         response.status(400).send({error : e.message});
     }
 })
@@ -149,7 +152,7 @@ router.get('/user/logout', authentication, async function(request, response){
     }
 })
 
-//change password
+//change password on desire
 router.post("/user/changepassword", authentication, async function(request, response){
     const previousPassword = request.body.oldpassword;
     const newPassword = request.body.newpassword;
