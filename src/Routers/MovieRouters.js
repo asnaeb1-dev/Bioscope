@@ -142,22 +142,24 @@ router.get('/movie/search', authentication, async function(request, response){
     }
 })
 
-// /movie/category?category={category}
+// /movie/category?category={category}&limit={limit}
 router.get('/movie/category', authentication, async function(request, response){
     const category = request.query.category;
+    const limit = request.query.limit;
     try{
-        const movies = await Movie.find({category});
+        const movies = await Movie.find({category}).limit(parseInt(limit));
         response.send(movies);
     }catch(e){
         response.status(404).send({error: e.message});
     }
 });
 
-// /movie/category?i={industry}
+// /movie/category?i={industry}&limit={limit}
 router.get('/movie/industry', authentication, async function(request, response){
     const industry = request.query.i;
+    const limit = request.query.limit;
     try{
-        const movies = await Movie.find({industry});
+        const movies = await Movie.find({industry}).limit(parseInt(limit));
         response.send(movies);
     }catch(e){
         response.status(404).send({error: e.message});
